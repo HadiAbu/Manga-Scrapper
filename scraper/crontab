@@ -1,0 +1,2 @@
+0 3 * * * root cd /app && python scraper.py >> /var/log/cron.log 2>&1
+

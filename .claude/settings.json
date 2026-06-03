@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm*docker-compose*)",
+      "Bash(rm*nginx.conf*)",
+      "Bash(rm*entrypoint.sh*)",
+      "Bash(rm*crontab*)",
+      "Bash(rm*requirements.txt*)",
+      "Bash(rm*.env*)",
+      "Bash(rm*CLAUDE.md*)",
+      "Bash(rm*README.md*)",
+      "Bash(del*docker-compose*)",
+      "Bash(del*nginx.conf*)",
+      "Bash(del*entrypoint.sh*)",
+      "Bash(del*crontab*)",
+      "Bash(del*requirements.txt*)",
+      "Bash(del*.env*)",
+      "Bash(del*CLAUDE.md*)",
+      "Bash(del*README.md*)",
+      "Bash(rm -rf*)",
+      "Bash(Remove-Item*docker-compose*)",
+      "Bash(Remove-Item*nginx.conf*)",
+      "Bash(Remove-Item*entrypoint.sh*)",
+      "Bash(Remove-Item*crontab*)",
+      "Bash(Remove-Item*requirements.txt*)",
+      "Bash(Remove-Item*.env*)",
+      "Bash(Remove-Item*CLAUDE.md*)",
+      "Bash(Remove-Item*README.md*)"
+    ]
+  }
+}

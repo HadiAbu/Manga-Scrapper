@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manga Search</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-spinner"></div>
+    <p>Signing in…</p>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <span class="logo">Manga Search</span>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search by title or description..." autocomplete="off">
+        <select id="genre-filter">
+          <option value="">All Genres</option>
+        </select>
+      </div>
+      <span id="result-info" class="result-info"></span>
+      <div class="user-info">
+        <span id="user-name" class="user-name"></span>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="manga-grid" class="manga-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button id="modal-close" class="modal-close">&#10005;</button>
+      <div class="modal-inner">
+        <img id="modal-img" src="" alt="">
+        <div class="modal-details">
+          <h2 id="modal-title"></h2>
+          <div class="modal-meta">
+            <span id="modal-score" class="score"></span>
+            <span id="modal-status"></span>
+            <span id="modal-volumes"></span>
+          </div>
+          <div id="modal-genres" class="genres"></div>
+          <p id="modal-authors" class="authors"></p>
+          <p id="modal-synopsis" class="synopsis"></p>
+          <button id="modal-read-btn" class="read-btn">Read Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Manga Reader ── -->
+  <div id="reader" class="reader hidden">
+    <div class="reader-topbar">
+      <button id="reader-close" class="reader-back-btn">&#8592; Library</button>
+      <span id="reader-manga-title" class="reader-manga-title"></span>
+      <div class="reader-controls">
+        <select id="reader-chapter-select" class="reader-chapter-select"></select>
+        <span id="reader-page-info" class="reader-page-info"></span>
+      </div>
+    </div>
+
+    <div class="reader-stage">
+      <button id="reader-prev" class="reader-arrow" aria-label="Previous page">&#8249;</button>
+
+      <div id="reader-viewport" class="reader-viewport">
+        <div id="reader-loading" class="reader-status">
+          <div class="auth-spinner"></div>
+          <p id="reader-loading-text">Loading…</p>
+        </div>
+        <p id="reader-error" class="reader-status reader-error-msg hidden"></p>
+        <img id="reader-page-img" class="reader-page-img hidden" src="" alt="Manga page" />
+      </div>
+
+      <button id="reader-next" class="reader-arrow" aria-label="Next page">&#8250;</button>
+    </div>
+  </div>
+
+  <script src="/auth/js/keycloak.js"></script>
+  <script src="app.js"></script>
+  <script src="reader.js"></script>
+</body>
+</html>
