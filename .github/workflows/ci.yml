@@ -1,0 +1,65 @@
+name: CI - Build and Push
+
+on:
+  push:
+    branches: ["master"]
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: hadiabu/scalable-scraper-api
+  SCRAPER_IMAGE_NAME: hadiabu/scalable-scraper-scraper
+  NGINX_IMAGE_NAME: hadiabu/scalable-scraper-nginx
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set short SHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # API image — context is ./api (has its own Dockerfile)
+      - name: Build and push API
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+
+      # Scraper image — context is ./scraper (has its own Dockerfile)
+      - name: Build and push Scraper
+        uses: docker/build-push-action@v5
+        with:
+          context: ./scraper
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.SCRAPER_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.SCRAPER_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+
+      # Nginx image — context is repo root so the Dockerfile can access
+      # both nginx/nginx.conf and web/ in a single COPY layer
+      - name: Build and push Nginx
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.NGINX_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.NGINX_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
