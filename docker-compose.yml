@@ -1,11 +1,9 @@
 services:
   nginx:
-    image: nginx:alpine
+    image: ghcr.io/hadiabu/scalable-scraper-nginx:latest
+    pull_policy: always
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./web:/usr/share/nginx/html:ro
     depends_on:
       api:
         condition: service_healthy
@@ -13,7 +11,8 @@ services:
         condition: service_healthy
 
   api:
-    build: ./api
+    image: ghcr.io/hadiabu/scalable-scraper-api:latest
+    pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
       - KEYCLOAK_INTERNAL_URL=http://keycloak:8080/auth
@@ -90,7 +89,8 @@ services:
       start_period: 60s
 
   scraper:
-    build: ./scraper
+    image: ghcr.io/hadiabu/scalable-scraper-scraper:latest
+    pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
       - MAX_PAGES=200
