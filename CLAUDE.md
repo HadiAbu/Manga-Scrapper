@@ -15,7 +15,6 @@ Internet :80
 Nginx (LB + static server)          ← only public port
   /auth/*    → proxy_pass keycloak:8080   (Keycloak OIDC)
   /api/*     → proxy_pass api:8000        (requires valid JWT)
-  /dashboards/ → proxy_pass dashboards:5601 (internal tool)
   /          → serves web/ (HTML/JS/CSS)
     │
     ├──────────────────────────────┐
@@ -39,7 +38,7 @@ Scraper (cron, runs 3am daily) ← no HTTP, internal only
 ## Build status
 
 - [x] docker-compose.yml — all services defined (Keycloak + DB added)
-- [x] nginx/nginx.conf — LB + static + API + Keycloak + Dashboards proxy
+- [x] nginx/nginx.conf — LB + static + API + Keycloak
 - [x] api/app/main.py — FastAPI app with CORS + JWKS prefetch on startup
 - [x] api/app/auth.py — JWT validation against Keycloak JWKS
 - [x] api/app/search.py — all endpoints; search/genres/manga require auth
@@ -73,7 +72,6 @@ docker compose run --rm scraper python scraper.py
 Services once running:
 - **App**: http://localhost — redirects to Keycloak login on first visit
 - **Keycloak admin console**: http://localhost/auth/admin (admin / value from .env)
-- **OpenSearch Dashboards**: http://localhost/dashboards/ (no direct port)
 - **API** (authenticated): goes through Nginx at `/api/...`
 
 ```bash
@@ -175,9 +173,9 @@ Secrets live in `.env` (git-ignored). Copy `.env.example` and set real values be
    - `GET /api/genres`
    - `GET /api/search?q=naruto`
    - `GET /api/manga/<mal_id>`
-4. For scraper changes, run a manual scrape and confirm documents appear in OpenSearch Dashboards (`http://localhost:5601`).
-5. For frontend changes, test in a real browser — the UI has no automated tests.
-6. Commit message format: `<service>: <short imperative description>` (e.g. `api: add score range filter`).
+
+4. For frontend changes, test in a real browser — the UI has no automated tests.
+5. Commit message format: `<service>: <short imperative description>` (e.g. `api: add score range filter`).
 
 ## Code style & conventions
 
@@ -193,7 +191,6 @@ Secrets live in `.env` (git-ignored). Copy `.env.example` and set real values be
 There is no automated test suite yet. Until one is added:
 
 - Manually exercise every changed API endpoint and confirm the HTTP status and response shape match the schema table above.
-- After any scraper change, inspect at least one indexed document in OpenSearch Dashboards to confirm field mapping is intact.
 - After any Nginx config change, verify both the static-file route (`/`) and the API proxy route (`/api/health`) return `200`.
 
 ## Sensitive files — do not delete or overwrite without explicit confirmation

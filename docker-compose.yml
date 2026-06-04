@@ -50,17 +50,6 @@ services:
       timeout: 10s
       retries: 12
 
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.13.0
-    environment:
-      - OPENSEARCH_HOSTS=http://opensearch:9200
-      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
-      - SERVER_BASEPATH=/dashboards
-      - SERVER_REWRITEBASEPATH=true
-    depends_on:
-      - opensearch
-    # No direct port — access through nginx at /dashboards/ (internal only)
-
   keycloak-db:
     image: postgres:16-alpine
     environment:
