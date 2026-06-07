@@ -1,7 +1,7 @@
 {
   "realm": "manga",
   "enabled": true,
-  "sslRequired": "none",
+  "sslRequired": "external",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
   "clients": [
