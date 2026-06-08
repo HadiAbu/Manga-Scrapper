@@ -3,15 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manga Search</title>
+<title>Manga Search</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div id="auth-overlay" class="auth-overlay">
-    <div class="auth-spinner"></div>
-    <p>Signing in…</p>
-  </div>
 
   <header>
     <div class="header-inner">
@@ -23,10 +18,6 @@
         </select>
       </div>
       <span id="result-info" class="result-info"></span>
-      <div class="user-info">
-        <span id="user-name" class="user-name"></span>
-        <button id="logout-btn" class="logout-btn">Logout</button>
-      </div>
     </div>
   </header>
 
@@ -72,7 +63,7 @@
 
       <div id="reader-viewport" class="reader-viewport">
         <div id="reader-loading" class="reader-status">
-          <div class="auth-spinner"></div>
+          <div class="spinner"></div>
           <p id="reader-loading-text">Loading…</p>
         </div>
         <p id="reader-error" class="reader-status reader-error-msg hidden"></p>
@@ -83,7 +74,6 @@
     </div>
   </div>
 
-  <script src="/auth/js/keycloak.js"></script>
   <script src="app.js"></script>
   <script src="reader.js"></script>
 </body>

@@ -1,7 +1,6 @@
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from opensearchpy.exceptions import NotFoundError
-from .auth import get_current_user
 from .search import INDEX, _get_client
 
 MANGADEX_API = "https://api.mangadex.org"
@@ -130,18 +129,30 @@ async def _find_comick_chapter_hid(manga_hid: str, chap_num: str) -> str:
 
 async def _chapters_from_mangadex(mal_id: int, title: str, title_english: str) -> list[dict]:
     mangadex_id = await _find_mangadex_id(mal_id, title, title_english)
+    limit = 500
+    offset = 0
+    raw = []
     async with httpx.AsyncClient() as http:
-        data = await _mangadex_get(
-            http,
-            f"{MANGADEX_API}/manga/{mangadex_id}/feed",
-            params={
-                "translatedLanguage[]": "en",
-                "order[volume]": "asc",
-                "order[chapter]": "asc",
-                "limit": 500,
-            },
-        )
-    raw = data.get("data", [])
+        while True:
+            data = await _mangadex_get(
+                http,
+                f"{MANGADEX_API}/manga/{mangadex_id}/feed",
+                params={
+                    "translatedLanguage[]": "en",
+                    "order[volume]": "asc",
+                    "order[chapter]": "asc",
+                    "limit": limit,
+                    "offset": offset,
+                },
+            )
+            batch = data.get("data", [])
+            if not batch:
+                break
+            raw.extend(batch)
+            offset += len(batch)
+            if offset >= data.get("total", 0):
+                break
+
     if not raw:
         raise HTTPException(status_code=404, detail="No English chapters found on MangaDex")
 
@@ -162,12 +173,21 @@ async def _chapters_from_mangadex(mal_id: int, title: str, title_english: str) -
 
 async def _chapters_from_comick(mal_id: int, title: str, title_english: str) -> list[dict]:
     hid = await _find_comick_hid(mal_id, title, title_english)
+    limit = 300
+    page = 1
+    raw = []
     async with httpx.AsyncClient() as http:
-        data = await _comick_get(
-            http, f"{COMICK_API}/comic/{hid}/chapters",
-            params={"lang": "en", "limit": 300, "page": 1}
-        )
-    raw = data.get("chapters", []) if isinstance(data, dict) else []
+        while True:
+            data = await _comick_get(
+                http, f"{COMICK_API}/comic/{hid}/chapters",
+                params={"lang": "en", "limit": limit, "page": page}
+            )
+            batch = data.get("chapters", []) if isinstance(data, dict) else []
+            if not batch:
+                break
+            raw.extend(batch)
+            page += 1
+
     if not raw:
         raise HTTPException(status_code=404, detail="No English chapters found on Comick")
     return [
@@ -235,7 +255,7 @@ def _parse_chapter_id(chapter_id: str) -> tuple[str, str, int | None, str | None
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @router.get("/manga/{mal_id}/chapters")
-async def get_chapters(mal_id: int, _user: dict = Depends(get_current_user)):
+async def get_chapters(mal_id: int):
     client = _get_client()
     try:
         doc = client.get(index=INDEX, id=mal_id)
@@ -266,7 +286,7 @@ async def get_chapters(mal_id: int, _user: dict = Depends(get_current_user)):
 
 
 @router.get("/chapters/{chapter_id}/pages")
-async def get_pages(chapter_id: str, _user: dict = Depends(get_current_user)):
+async def get_pages(chapter_id: str):
     source, raw_id, mal_id, chap_num = _parse_chapter_id(chapter_id)
 
     # Comick chapters go directly — no further fallback needed

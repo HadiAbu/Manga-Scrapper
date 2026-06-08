@@ -1,37 +1,18 @@
 const API = '/api';
+
+function proxyImg(url) {
+  return url ? `${API}/image-proxy?url=${encodeURIComponent(url)}` : '';
+}
 let currentPage = 1;
 let currentQuery = '';
 let currentGenre = '';
 let searchTimer = null;
 let currentModalManga = null;
 
-// ── Keycloak setup ──
-const KC = new Keycloak({
-  url: '/auth',
-  realm: 'manga',
-  clientId: 'manga-app',
-});
-
-async function authFetch(url, options = {}) {
-  try {
-    await KC.updateToken(30); // refresh token if it expires in < 30 s
-  } catch {
-    KC.login();
-    throw new Error('Session expired — redirecting to login');
-  }
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${KC.token}`,
-    },
-  });
-}
-
 // ── Data loading ──
 async function loadGenres() {
   try {
-    const res = await authFetch(`${API}/genres`);
+    const res = await fetch(`${API}/genres`);
     const genres = await res.json();
     const select = document.getElementById('genre-filter');
     genres.forEach(g => {
@@ -56,7 +37,7 @@ async function search(resetPage = true) {
   grid.innerHTML = '<p class="no-results">Loading...</p>';
 
   try {
-    const res = await authFetch(`${API}/search?${params}`);
+    const res = await fetch(`${API}/search?${params}`);
     const data = await res.json();
     renderResults(data);
   } catch (e) {
@@ -94,7 +75,7 @@ function renderResults(data) {
       .join('');
 
     card.innerHTML = `
-      <img src="${manga.cover_url || ''}" alt="${escHtml(manga.title)}" loading="lazy"
+      <img src="${proxyImg(manga.cover_url)}" alt="${escHtml(manga.title)}" loading="lazy"
            onerror="this.style.background='#22222e'">
       <div class="card-body">
         <h3>${escHtml(manga.title)}</h3>
@@ -133,7 +114,7 @@ function renderResults(data) {
 function openModal(manga) {
   currentModalManga = manga;
   document.getElementById('modal-title').textContent    = manga.title || '';
-  document.getElementById('modal-img').src              = manga.large_cover_url || manga.cover_url || '';
+  document.getElementById('modal-img').src              = proxyImg(manga.large_cover_url || manga.cover_url);
   document.getElementById('modal-img').alt              = manga.title || '';
   document.getElementById('modal-score').textContent    = manga.score
     ? `★ ${manga.score}  (${(manga.scored_by || 0).toLocaleString()} votes)`
@@ -185,25 +166,10 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
-document.getElementById('logout-btn').addEventListener('click', () => KC.logout());
-
 document.getElementById('modal-read-btn').addEventListener('click', () => {
   if (currentModalManga) openReader(currentModalManga);
 });
 
-// Token auto-refresh in the background
-KC.onTokenExpired = () => KC.updateToken(60).catch(() => KC.login());
-
 // ── Init ──
-KC.init({ onLoad: 'login-required', pkceMethod: 'S256' }).then(authenticated => {
-  if (!authenticated) return; // KC redirects; execution stops here
-
-  document.getElementById('auth-overlay').classList.add('hidden');
-  document.getElementById('user-name').textContent =
-    KC.tokenParsed?.preferred_username || KC.tokenParsed?.email || '';
-
-  loadGenres();
-  search();
-}).catch(() => {
-  document.querySelector('#auth-overlay p').textContent = 'Auth failed — check Keycloak is running.';
-});
+loadGenres();
+search();

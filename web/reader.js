@@ -68,7 +68,7 @@ async function openReader(manga) {
   readerShowLoading('Finding manga on MangaDex…');
 
   try {
-    const res = await authFetch(`/api/manga/${manga.mal_id}/chapters`);
+    const res = await fetch(`/api/manga/${manga.mal_id}/chapters`);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       readerShowError(body.detail || 'This manga is not available for reading.');
@@ -102,7 +102,7 @@ async function loadChapter(idx, startAtEnd = false) {
 
   try {
     const ch = READER.chapters[idx];
-    const res = await authFetch(`/api/chapters/${ch.id}/pages`);
+    const res = await fetch(`/api/chapters/${ch.id}/pages`);
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));

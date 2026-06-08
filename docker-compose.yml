@@ -1,27 +1,20 @@
 services:
   nginx:
-    image: ghcr.io/hadiabu/scalable-scraper-nginx:latest
+    image: ghcr.io/hadiabu/scalable-scraper-nginx:no_auth
     pull_policy: always
     ports:
       - "80:80"
     depends_on:
       api:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
 
   api:
-    image: ghcr.io/hadiabu/scalable-scraper-api:latest
+    image: ghcr.io/hadiabu/scalable-scraper-api:no_auth
     pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
-      - KEYCLOAK_INTERNAL_URL=http://keycloak:8080/auth
-      - KEYCLOAK_PUBLIC_URL=http://localhost/auth
-      - KEYCLOAK_REALM=manga
     depends_on:
       opensearch:
-        condition: service_healthy
-      keycloak:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8000/api/health || exit 1"]
@@ -49,47 +42,8 @@ services:
       timeout: 10s
       retries: 12
 
-  keycloak-db:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_DB=keycloak
-      - POSTGRES_USER=keycloak
-      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
-    volumes:
-      - keycloak_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U keycloak"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0
-    command: start-dev --import-realm
-    environment:
-      - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
-      - KC_DB_USERNAME=keycloak
-      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-      - KC_HTTP_RELATIVE_PATH=/auth
-      - KC_HOSTNAME_STRICT=false
-      - KC_HEALTH_ENABLED=true
-    volumes:
-      - ./keycloak:/opt/keycloak/data/import:ro
-    depends_on:
-      keycloak-db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080 2>/dev/null"]
-      interval: 15s
-      timeout: 5s
-      retries: 20
-      start_period: 60s
-
   scraper:
-    image: ghcr.io/hadiabu/scalable-scraper-scraper:latest
+    image: ghcr.io/hadiabu/scalable-scraper-scraper:no_auth
     pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
@@ -100,4 +54,3 @@ services:
 
 volumes:
   opensearch_data:
-  keycloak_db_data:

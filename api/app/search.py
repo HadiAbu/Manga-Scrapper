@@ -1,8 +1,11 @@
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
+import httpx
 from opensearchpy import OpenSearch
 from opensearchpy.exceptions import NotFoundError
-from .auth import get_current_user
+
+ALLOWED_IMAGE_HOST = "cdn.myanimelist.net"
 
 INDEX = "manga"
 _client: OpenSearch = None
@@ -29,7 +32,6 @@ def search(
     page: int = 1,
     limit: int = 24,
     genre: str = "",
-    _user: dict = Depends(get_current_user),
 ):
     client = _get_client()
     offset = (page - 1) * limit
@@ -67,7 +69,7 @@ def search(
 
 
 @router.get("/genres")
-def list_genres(_user: dict = Depends(get_current_user)):
+def list_genres():
     client = _get_client()
     body = {
         "size": 0,
@@ -78,6 +80,27 @@ def list_genres(_user: dict = Depends(get_current_user)):
     except NotFoundError:
         return []
     return [b["key"] for b in res["aggregations"]["genres"]["buckets"]]
+
+
+@router.get("/image-proxy")
+async def image_proxy(url: str):
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.netloc != ALLOWED_IMAGE_HOST:
+        raise HTTPException(status_code=400, detail="Image host not allowed")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=10, follow_redirects=True)
+            resp.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Upstream returned {e.response.status_code}")
+    except httpx.RequestError:
+        raise HTTPException(status_code=502, detail="Could not reach image CDN")
+    return Response(
+        content=resp.content,
+        media_type=resp.headers.get("content-type", "image/jpeg"),
+        headers={"Cache-Control": "public, max-age=604800, immutable"},
+    )
 
 
 @router.get("/health")
@@ -98,7 +121,7 @@ def health():
 
 
 @router.get("/manga/{mal_id}")
-def get_manga(mal_id: int, _user: dict = Depends(get_current_user)):
+def get_manga(mal_id: int):
     client = _get_client()
     try:
         res = client.get(index=INDEX, id=mal_id)

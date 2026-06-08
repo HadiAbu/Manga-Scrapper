@@ -420,24 +420,8 @@ main {
   .reader-arrow { width: 36px; font-size: 1.8rem; }
 }
 
-/* ── Auth overlay ── */
-.auth-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  z-index: 999;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.auth-overlay.hidden { display: none; }
-
-.auth-spinner {
+/* ── Spinner (used by reader loading state) ── */
+.spinner {
   width: 36px;
   height: 36px;
   border: 3px solid var(--surface2);
@@ -448,37 +432,10 @@ main {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── User info / logout ── */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  white-space: nowrap;
-}
-
-.user-name {
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.logout-btn {
-  background: transparent;
-  border: 1px solid #2a2a3a;
-  color: var(--muted);
-  padding: 0.3rem 0.7rem;
-  border-radius: var(--radius);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.logout-btn:hover { border-color: var(--accent); color: var(--accent); }
-
 /* ── Responsive ── */
 @media (max-width: 560px) {
   .header-inner { flex-wrap: wrap; }
-  .search-bar { flex: 1 1 100%; order: 3; }
-  .user-info { order: 2; }
+  .search-bar { flex: 1 1 100%; }
   .modal-inner { flex-direction: column; }
   .modal-inner img { width: 100%; max-width: 180px; }
 }

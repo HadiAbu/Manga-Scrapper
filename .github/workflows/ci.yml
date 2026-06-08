@@ -46,9 +46,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Start stack
-        env:
-          KEYCLOAK_DB_PASSWORD: ci-test-password
-          KEYCLOAK_ADMIN_PASSWORD: ci-admin-password
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
 
@@ -69,12 +66,12 @@ jobs:
 
       - name: Smoke tests
         run: |
-          # /api/health — no auth, must return 200
+          # /api/health — must return 200
           curl -sf http://localhost/api/health
 
-          # /api/search — requires auth, must return 401 (not 404 or 502)
+          # /api/search — no auth required, must return 200
           STATUS=$(curl -o /dev/null -sw "%{http_code}" "http://localhost/api/search?q=naruto")
-          [ "$STATUS" = "401" ] || { echo "Expected 401 on /api/search, got $STATUS"; exit 1; }
+          [ "$STATUS" = "200" ] || { echo "Expected 200 on /api/search, got $STATUS"; exit 1; }
 
           echo "All smoke tests passed"
 
@@ -128,8 +125,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ matrix.image }}
           tags: |
-            type=raw,value=latest
-            type=sha,format=short
+            type=raw,value=no_auth
+            type=sha,format=short,prefix=no_auth-
 
       - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
