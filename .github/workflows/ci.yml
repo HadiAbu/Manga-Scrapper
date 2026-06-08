@@ -2,7 +2,7 @@ name: CI - Build, Test, and Push
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "noauth"]
 
 env:
   REGISTRY: ghcr.io
