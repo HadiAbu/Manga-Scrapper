@@ -47,7 +47,7 @@ jobs:
 
       - name: Start stack
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+          docker compose -f docker-compose.yml up -d
 
       - name: Wait for API health
         run: |
@@ -77,11 +77,11 @@ jobs:
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml logs
+        run: docker compose -f docker-compose.yml logs
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+        run: docker compose -f docker-compose.yml down -v
 
   # ── 2. Build and push all three images in parallel (only if test passes) ──
   push:

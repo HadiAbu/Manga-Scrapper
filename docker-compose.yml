@@ -1,6 +1,9 @@
 services:
   nginx:
     image: ghcr.io/hadiabu/scalable-scraper-nginx:no_auth
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     pull_policy: always
     ports:
       - "80:80"
@@ -10,6 +13,8 @@ services:
 
   api:
     image: ghcr.io/hadiabu/scalable-scraper-api:no_auth
+    build:
+      context: ./api
     pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
@@ -44,6 +49,8 @@ services:
 
   scraper:
     image: ghcr.io/hadiabu/scalable-scraper-scraper:no_auth
+    build:
+      context: ./scraper
     pull_policy: always
     environment:
       - OPENSEARCH_URL=http://opensearch:9200
